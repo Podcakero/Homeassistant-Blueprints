@@ -11,7 +11,6 @@ blueprint:
         entity:
           filter:
             domain: switch
-            device_class: switch
           multiple: true
     numbers:
       name: Switch Brightness
