@@ -39,7 +39,6 @@ triggers:
   - trigger: state
     id: on_off
     entity_id: !input switches
-    for: "00:00:01"
     variables:
       entity_id: "{{ trigger.entity_id }}"
   # Trigger if light switch brightness is changed
