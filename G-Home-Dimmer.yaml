@@ -9,8 +9,6 @@ eblueprint:
       name: Switch Buttons
       selector:
         entity:
-          filter:
-            device_class: switch
           multiple: true
     numbers:
       name: Switch Brightness
