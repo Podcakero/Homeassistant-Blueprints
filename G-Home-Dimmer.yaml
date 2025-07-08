@@ -1,0 +1,96 @@
+blueprint:
+  name: G Home Dimmer Linked Lights and Switches Blueprint
+  domain: automation
+  author: Podcake
+  homeassistant:
+    min_version: 2024.6.0
+  input:
+    switches:
+      name: Switch Buttons
+      selector:
+        entity:
+          filter:
+            domain: switch
+            device_class: switch
+          multiple: true
+    numbers:
+      name: Switch Brightness
+      selector:
+        entity:
+          filter:
+            domain: number
+          multiple: true
+    areas:
+      name: Area
+      selector:
+        area:
+          entity:
+            domain: light
+          multiple: true
+
+mode: queued
+max_exceeded: silent
+
+variables:
+  switches: !input switches
+  numbers: !input numbers
+  
+triggers:
+  # Trigger if light switch is pressed
+  - trigger: state
+    id: on_off
+    entity_id: !input switches
+    variables:
+      entity_id: "{{ trigger.entity_id }}"
+  # Trigger if light switch brightness is changed
+  - trigger: state
+    id: dimmer_level
+    entity_id: !input numbers
+    variables:
+      brightness: "{{ trigger.to_state.state|float }}"
+conditions:
+  # Do not trigger if state has not changed
+  - condition: template
+    value_template: "{ trigger.to_state.state != trigger.from_state.state }}"
+  # Do not trigger if state has not changed
+  - condition: template
+    value_template: >-
+      {{trigger.to_state.context.parent_id is none or 
+      (trigger.to_state.context.id != this.context.id and 
+      trigger.to_state.context.parent_id != this.context.id) }}
+actions:
+  - choose:
+      # Perform actions when light switch is pressed
+      - conditions:
+          - condition: trigger
+            id: on_off
+        sequence:
+          # Turn on all lights in designated area
+          - action: light.turn_{{ trigger.to_state.state }}
+            target:
+              area_id: !input areas
+          # Set all switches that did not trigger automation to the current state
+          - action: homeassistant.turn_{{ trigger.to_state.state }}
+            target:
+              entity_id: >-
+                {{ expand(switches) | selectattr("entity_id", "!=",
+                trigger.entity_id) | map(attribute="entity_id") | list }}
+      # Perform actions when light switch brightness is changed
+      - conditions:
+          - condition: trigger
+            id: dimmer_level
+        sequence:
+          # Set brightness of all lights in area to desired brightness
+          - action: light.turn_on
+            data:
+              brightness_pct: "{{ trigger.to_state.state|float }}"
+            target:
+              area_id: !input areas
+          # Update all switches with desired brightness
+          - action: number.set_value
+            data:
+              value: "{{ trigger.to_state.state|float }}"
+            target:
+              entity_id: >-
+                {{ expand(numbers) | selectattr("entity_id", "!=",
+                trigger.entity_id) | map(attribute="entity_id") | list }}
