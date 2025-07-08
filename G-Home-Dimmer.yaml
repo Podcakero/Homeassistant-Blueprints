@@ -27,7 +27,7 @@ blueprint:
             domain: light
           multiple: true
 
-mode: queued
+mode: single
 max_exceeded: silent
 
 variables:
@@ -39,12 +39,14 @@ triggers:
   - trigger: state
     id: on_off
     entity_id: !input switches
+    for: "00:00:01"
     variables:
       entity_id: "{{ trigger.entity_id }}"
   # Trigger if light switch brightness is changed
   - trigger: state
     id: dimmer_level
     entity_id: !input numbers
+    for: "00:00:01"
     variables:
       brightness: "{{ trigger.to_state.state|float }}"
 conditions:
