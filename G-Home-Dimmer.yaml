@@ -1,4 +1,4 @@
-blueprint:
+eblueprint:
   name: G Home Dimmer Linked Lights and Switches Blueprint
   domain: automation
   author: Podcake
@@ -10,7 +10,7 @@ blueprint:
       selector:
         entity:
           filter:
-            domain: switch
+            device_class: switch
           multiple: true
     numbers:
       name: Switch Brightness
