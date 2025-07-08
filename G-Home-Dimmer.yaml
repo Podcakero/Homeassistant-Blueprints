@@ -52,9 +52,6 @@ triggers:
 conditions:
   # Do not trigger if state has not changed
   - condition: template
-    value_template: "{ trigger.to_state.state != trigger.from_state.state }}"
-  # Do not trigger if state has not changed
-  - condition: template
     value_template: >-
       {{trigger.to_state.context.parent_id is none or 
       (trigger.to_state.context.id != this.context.id and 
